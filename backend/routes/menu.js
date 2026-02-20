@@ -108,7 +108,7 @@ router.get('/:id', async (req, res) => {
 // @route   POST /api/menu
 // @desc    Create menu item
 // @access  Private/Admin
-router.post('/', protect, admin, upload.single('image'), async (req, res) => {
+router.post('/', protect, admin, upload.single('image'), upload.processAndUploadToR2('uploads'), async (req, res) => {
     try {
         const {
             name, description, price, category, isVeg,
@@ -134,7 +134,7 @@ router.post('/', protect, admin, upload.single('image'), async (req, res) => {
             tags: tags ? JSON.parse(tags) : [],
             preparationTime: preparationTime || 15,
             stockQuantity: stockQuantity || -1,
-            image: req.file ? `/uploads/${req.file.filename}` : ''
+            image: req.fileUrl || ''
         });
 
         await item.save();
@@ -149,7 +149,7 @@ router.post('/', protect, admin, upload.single('image'), async (req, res) => {
 // @route   PUT /api/menu/:id
 // @desc    Update menu item
 // @access  Private/Admin
-router.put('/:id', protect, admin, upload.single('image'), async (req, res) => {
+router.put('/:id', protect, admin, upload.single('image'), upload.processAndUploadToR2('uploads'), async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);
         if (!item) {
@@ -181,8 +181,8 @@ router.put('/:id', protect, admin, upload.single('image'), async (req, res) => {
             item.tags = JSON.parse(req.body.tags);
         }
 
-        if (req.file) {
-            item.image = `/uploads/${req.file.filename}`;
+        if (req.fileUrl) {
+            item.image = req.fileUrl;
         }
 
         await item.save();

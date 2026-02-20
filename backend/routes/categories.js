@@ -49,7 +49,7 @@ router.get('/:id', async (req, res) => {
 // @route   POST /api/categories
 // @desc    Create category
 // @access  Private/Admin
-router.post('/', protect, admin, upload.single('image'), async (req, res) => {
+router.post('/', protect, admin, upload.single('image'), upload.processAndUploadToR2('uploads'), async (req, res) => {
     try {
         const { name, description, order } = req.body;
 
@@ -57,7 +57,7 @@ router.post('/', protect, admin, upload.single('image'), async (req, res) => {
             name,
             description,
             order: order || 0,
-            image: req.file ? `/uploads/${req.file.filename}` : ''
+            image: req.fileUrl || ''
         });
 
         await category.save();
@@ -74,7 +74,7 @@ router.post('/', protect, admin, upload.single('image'), async (req, res) => {
 // @route   PUT /api/categories/:id
 // @desc    Update category
 // @access  Private/Admin
-router.put('/:id', protect, admin, upload.single('image'), async (req, res) => {
+router.put('/:id', protect, admin, upload.single('image'), upload.processAndUploadToR2('uploads'), async (req, res) => {
     try {
         const { name, description, order, isActive } = req.body;
 
@@ -87,7 +87,7 @@ router.put('/:id', protect, admin, upload.single('image'), async (req, res) => {
         if (description !== undefined) category.description = description;
         if (order !== undefined) category.order = order;
         if (isActive !== undefined) category.isActive = isActive === 'true' || isActive === true;
-        if (req.file) category.image = `/uploads/${req.file.filename}`;
+        if (req.fileUrl) category.image = req.fileUrl;
 
         await category.save();
         res.json(category);
